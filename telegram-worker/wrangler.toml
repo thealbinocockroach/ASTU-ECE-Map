@@ -1,0 +1,10 @@
+name = "ece-downloads"
+main = "src/index.js"
+compatibility_date = "2026-11-10"
+
+[[kv_namespaces]]
+binding = "FILES"
+id = "12dddcceca3b4e2990e42e454f01d7f1"
+
+[vars]
+CHANNEL_ID = "@ECEFilesArchive"

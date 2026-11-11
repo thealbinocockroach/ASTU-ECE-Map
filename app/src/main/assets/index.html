@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f0e7">
+  <title>ECE Map</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="telegram-config.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="wordmark" href="#home" aria-label="ECE Map home"><img class="astu-seal" src="astu-seal.png" alt="Adama Science and Technology University logo"><span>ECE <b>MAP</b></span></a>
+      <button class="theme-toggle" id="themeToggle" aria-label="Switch colour theme"><span class="sun-icon">◐</span><span class="theme-label">DARK MODE</span></button>
+    </header>
+
+    <main id="homeView">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="live-dot"></span> ECE · CURRICULUM GUIDE</p>
+          
+        </div>
+        <div class="hero-art" aria-label="Engineering photo highlights">
+          <div class="hero-track">
+            <figure class="hero-slide">
+              <img src="hero-satellite.jpg" alt="NASA Hubble Space Telescope above Earth" fetchpriority="high">
+              <figcaption>01 <span>Satellite systems</span></figcaption>
+            </figure>
+            <figure class="hero-slide">
+              <img src="hero-circuit.jpg" alt="Close-up photograph of a printed circuit board">
+              <figcaption>02 <span>Circuits and electronics</span></figcaption>
+            </figure>
+            <figure class="hero-slide">
+              <img src="hero-machine.jpg" alt="Industrial machinery inside a factory">
+              <figcaption>03 <span>Machines and systems</span></figcaption>
+            </figure>
+            <figure class="hero-slide">
+              <img src="hero-robot.jpg" alt="A robotic arm working in a factory">
+              <figcaption>04 <span>Robotics and automation</span></figcaption>
+            </figure>
+            <figure class="hero-slide">
+              <img src="hero-workbench.jpg" alt="Electronics workbench with an oscilloscope and circuit board">
+              <figcaption>05 <span>Electronics workbench</span></figcaption>
+            </figure>
+            <figure class="hero-slide">
+              <img src="hero-dish.jpg" alt="Large radio telescope dish in a field">
+              <figcaption>06 <span>Radio and satellite links</span></figcaption>
+            </figure>
+          </div>
+          <span class="hero-photo-count" aria-hidden="true">ASTU / ECE</span>
+        </div>
+        <div class="hero-foot"><span>FIVE-YEAR PROGRAM</span><span>ECE <i>✳</i> COURSE MAP</span></div>
+      </section>
+
+      <section class="browse-section" id="courses">
+        <div class="section-heading"><div><p class="eyebrow">THE COURSE MAP</p><h2>Start with your year.</h2></div><span id="courseCount" class="count-tag">— ITEMS</span></div>
+        <div class="tools-row"><label class="search-box"><span class="search-icon">⌕</span><input id="searchInput" type="search" placeholder="Course title or code" autocomplete="off"></label><div class="filter-wrap"><span class="filter-label">YEAR</span><select id="yearFilter" aria-label="Filter by year"><option value="all">All years</option><option value="1">Year I</option><option value="2">Year II</option><option value="3">Year III</option><option value="4">Year IV</option><option value="5">Year V</option></select></div></div>
+        <div class="curriculum-list" id="courseList"></div>
+        <div class="empty-state" id="emptyState" hidden>No course matches that search. Try another title or code.</div>
+      </section>
+      <footer class="site-footer"><span>ECE · COURSE GUIDE</span><span>COURSES · OUTLINES · STUDY FILES</span></footer>
+    </main>
+
+    <main id="detailView" class="detail-view" hidden>
+      <button class="back-button" id="backButton">← <span>ALL COURSES</span></button>
+      <div id="courseDetail"></div>
+      <footer class="site-footer"><span>ECE MAP</span><span>YOUR COURSE, IN ONE PLACE.</span></footer>
+    </main>
+    <main id="examView" class="detail-view" hidden>
+      <button class="back-button" id="examBackButton">← <span>COURSE MAP</span></button>
+      <section class="detail-hero exam-hero">
+        <p class="eyebrow">ASTU · EXIT EXAM PREPARATION</p>
+        <h1 class="detail-title">Exit Exam Guide</h1>
+        <p class="detail-sub">A focused review plan based on ASTU’s ECE competency framework.</p>
+      </section>
+      <section class="exam-blueprint" aria-label="Exit exam format">
+        <article class="exam-stat"><span>FORMAT</span><strong>100 MCQs</strong><small>Single best answer · four choices</small></article>
+        <article class="exam-stat"><span>TIME</span><strong>3 hours</strong><small>180 minutes · about 1.8 min per item</small></article>
+        <article class="exam-stat"><span>CORE COVERAGE</span><strong>17 courses</strong><small>Across five thematic areas</small></article>
+      </section>
+      <section class="exam-guide-section">
+        <div class="section-heading exam-heading"><div><p class="eyebrow">STUDY BLUEPRINT</p><h2>What the exam covers.</h2></div><span class="count-tag">100 QUESTIONS</span></div>
+        <p class="exam-intro">The framework groups the core courses by subject area. Each area’s question count follows its share of the selected core-course credits.</p>
+        <div id="examGuide" class="exam-guide"></div>
+      </section>
+      <section class="exam-access"><p class="eyebrow">ACCESS SUPPORT</p><h2 class="panel-title">Exam accommodations</h2><p>Candidates who need accommodations can request accessible formats such as Braille, large print, or audio, along with reader, scribe, screen-reader, magnification, or room support as appropriate. The framework recommends contacting the examination office at least two weeks ahead.</p></section>
+      <footer class="site-footer"><span>ASTU · ECE</span><span>EXIT EXAM GUIDE</span></footer>
+    </main>
+    <nav class="bottom-nav" aria-label="Main navigation">
+      <a class="nav-link active" href="#courses" id="coursesNav"><span>01</span> COURSE MAP</a>
+      <a class="nav-link" href="#exit-exam" id="examNav"><span>02</span> EXIT EXAM GUIDE</a>
+      <span class="nav-foot">ASTU / ECE</span>
+    </nav>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
