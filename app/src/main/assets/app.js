@@ -3494,9 +3494,17 @@ function showView(view, scrollToTop = true) {
 
 function scrollToPositionImmediately(position) {
   const root = document.documentElement;
+  const scrollRoot = document.scrollingElement || root;
+  const top = Math.max(0, position);
   root.classList.add('restore-position');
-  window.scrollTo(0, Math.max(0, position));
-  requestAnimationFrame(() => root.classList.remove('restore-position'));
+  scrollRoot.scrollTop = top;
+  document.body.scrollTop = top;
+  window.scrollTo(0, top);
+  requestAnimationFrame(() => {
+    scrollRoot.scrollTop = top;
+    document.body.scrollTop = top;
+    root.classList.remove('restore-position');
+  });
 }
 
 function saveViewScrollPosition(view, position = window.scrollY) {
