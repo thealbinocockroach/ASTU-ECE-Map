@@ -278,10 +278,15 @@ const courseList = document.getElementById('courseList');
 const yearFilter = document.getElementById('yearFilter');
 const searchInput = document.getElementById('searchInput');
 let activeCourse = null;
-let allCoursesScrollY = 0;
-let exitExamScrollY = 0;
+const savedCourseMapScrollY = Number(localStorage.getItem('campus-scroll-courses')) || 0;
+const savedExitExamScrollY = Number(localStorage.getItem('campus-scroll-exam')) || 0;
+let allCoursesScrollY = Math.max(0, savedCourseMapScrollY);
+let exitExamScrollY = Math.max(0, savedExitExamScrollY);
 let detailReturnView = 'courses';
 const collapsedSemesters = new Set();
+let restoringScrollPosition = false;
+let scrollSaveFrame = 0;
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
 const exitExamAreas = [
   {
@@ -468,8 +473,7 @@ function openCourse(id) {
   activeCourse = courseIndex.find(course => courseKey(course) === id);
   if (!activeCourse) return;
   detailReturnView = document.getElementById('examView').hidden ? 'courses' : 'exam';
-  if (detailReturnView === 'courses') allCoursesScrollY = window.scrollY;
-  else exitExamScrollY = window.scrollY;
+  saveViewScrollPosition(detailReturnView, window.scrollY);
   renderDetail();
   document.querySelector('#backButton span').textContent = detailReturnView === 'exam' ? 'EXIT EXAM GUIDE' : 'ALL COURSES';
   showView('detail');
@@ -3488,11 +3492,44 @@ function showView(view, scrollToTop = true) {
   if (scrollToTop) window.scrollTo(0, 0);
 }
 
+function saveViewScrollPosition(view, position = window.scrollY) {
+  const scrollY = Math.max(0, Math.round(position));
+  if (view === 'exam') {
+    exitExamScrollY = scrollY;
+    localStorage.setItem('campus-scroll-exam', String(scrollY));
+  } else if (view === 'courses') {
+    allCoursesScrollY = scrollY;
+    localStorage.setItem('campus-scroll-courses', String(scrollY));
+  }
+}
+
+function currentListView() {
+  return document.getElementById('examView').hidden ? 'courses' : 'exam';
+}
+
+function switchToView(view) {
+  if (!activeCourse && !document.getElementById('detailView').hidden) {
+    saveViewScrollPosition(detailReturnView);
+  } else if (!activeCourse) {
+    saveViewScrollPosition(currentListView());
+  }
+  activeCourse = null;
+  showView(view, false);
+  restoreScrollPosition(view === 'exam' ? exitExamScrollY : allCoursesScrollY);
+}
+
 function restoreScrollPosition(position) {
   const root = document.documentElement;
+  restoringScrollPosition = true;
   root.classList.add('restore-position');
-  window.scrollTo(0, position);
-  requestAnimationFrame(() => root.classList.remove('restore-position'));
+  requestAnimationFrame(() => {
+    window.scrollTo(0, Math.max(0, position));
+    requestAnimationFrame(() => {
+      root.classList.remove('restore-position');
+      restoringScrollPosition = false;
+      saveViewScrollPosition(currentListView());
+    });
+  });
 }
 
 window.backToCourses = () => {
@@ -3543,17 +3580,24 @@ document.getElementById('backButton').addEventListener('click', () => {
   showView(detailReturnView, false);
   restoreScrollPosition(detailReturnView === 'exam' ? exitExamScrollY : allCoursesScrollY);
 });
-document.getElementById('examBackButton').addEventListener('click', () => showView('courses'));
 document.getElementById('coursesNav').addEventListener('click', event => {
   event.preventDefault();
-  activeCourse = null;
-  showView('courses');
+  switchToView('courses');
 });
 document.getElementById('examNav').addEventListener('click', event => {
   event.preventDefault();
-  activeCourse = null;
-  showView('exam');
+  switchToView('exam');
 });
+document.getElementById('examBackButton').addEventListener('click', () => switchToView('courses'));
+window.addEventListener('scroll', () => {
+  if (activeCourse || restoringScrollPosition || scrollSaveFrame) return;
+  scrollSaveFrame = requestAnimationFrame(() => {
+    scrollSaveFrame = 0;
+    if (!activeCourse && !restoringScrollPosition) {
+      saveViewScrollPosition(currentListView());
+    }
+  });
+}, { passive: true });
 document.getElementById('themeToggle').addEventListener('click', () => {
   const enabled = !document.body.classList.contains('theme-dark');
   document.body.classList.toggle('theme-dark', enabled);
@@ -3581,6 +3625,7 @@ if (localStorage.getItem('campus-theme') === 'dark') {
 window.Campus?.setDark(document.body.classList.contains('theme-dark'));
 renderCatalog();
 renderExitExamGuide();
+if (allCoursesScrollY > 0) restoreScrollPosition(allCoursesScrollY);
 
 const heroSlides = Array.from(document.querySelectorAll('.hero-slide'));
 if (heroSlides.length > 1) {

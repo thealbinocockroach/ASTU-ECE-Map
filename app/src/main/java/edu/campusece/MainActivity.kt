@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.view.WindowInsets
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebView
@@ -31,7 +32,15 @@ class MainActivity : Activity() {
             setBackgroundColor(android.graphics.Color.TRANSPARENT)
             loadUrl("file:///android_asset/index.html")
         }
+        if (Build.VERSION.SDK_INT >= 35) {
+            webView.setOnApplyWindowInsetsListener { view, insets ->
+                val statusBarHeight = insets.getInsets(WindowInsets.Type.statusBars()).top
+                view.setPadding(view.paddingLeft, statusBarHeight, view.paddingRight, view.paddingBottom)
+                insets
+            }
+        }
         setContentView(webView)
+        if (Build.VERSION.SDK_INT >= 35) webView.requestApplyInsets()
     }
 
     inner class ThemeBridge {
