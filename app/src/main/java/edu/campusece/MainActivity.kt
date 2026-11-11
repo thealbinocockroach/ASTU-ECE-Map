@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.view.View
 import android.view.WindowInsets
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
@@ -20,7 +19,7 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.setDecorFitsSystemWindows(true)
+            window.setDecorFitsSystemWindows(false)
         }
 
         webView = WebView(this).apply {
@@ -32,15 +31,16 @@ class MainActivity : Activity() {
             setBackgroundColor(android.graphics.Color.TRANSPARENT)
             loadUrl("file:///android_asset/index.html")
         }
-        if (Build.VERSION.SDK_INT >= 35) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             webView.setOnApplyWindowInsetsListener { view, insets ->
-                val statusBarHeight = insets.getInsets(WindowInsets.Type.statusBars()).top
-                view.setPadding(view.paddingLeft, statusBarHeight, view.paddingRight, view.paddingBottom)
+                val systemBars = WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout()
+                val safeInsets = insets.getInsets(systemBars)
+                view.setPadding(safeInsets.left, safeInsets.top, safeInsets.right, safeInsets.bottom)
                 insets
             }
         }
         setContentView(webView)
-        if (Build.VERSION.SDK_INT >= 35) webView.requestApplyInsets()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) webView.requestApplyInsets()
     }
 
     inner class ThemeBridge {

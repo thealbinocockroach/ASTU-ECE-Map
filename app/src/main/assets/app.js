@@ -3489,7 +3489,14 @@ function showView(view, scrollToTop = true) {
   document.getElementById('coursesNav').classList.toggle('active', view === 'courses');
   document.getElementById('examNav').classList.toggle('active', view === 'exam');
   window.Campus?.setDetailOpen(view !== 'courses');
-  if (scrollToTop) window.scrollTo(0, 0);
+  if (scrollToTop) scrollToPositionImmediately(0);
+}
+
+function scrollToPositionImmediately(position) {
+  const root = document.documentElement;
+  root.classList.add('restore-position');
+  window.scrollTo(0, Math.max(0, position));
+  requestAnimationFrame(() => root.classList.remove('restore-position'));
 }
 
 function saveViewScrollPosition(view, position = window.scrollY) {
