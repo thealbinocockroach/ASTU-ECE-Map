@@ -7,6 +7,8 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowInsets
+import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebView
@@ -14,6 +16,7 @@ import android.webkit.WebViewClient
 
 class MainActivity : Activity() {
     private lateinit var webView: WebView
+    private lateinit var insetContainer: FrameLayout
     @Volatile
     private var detailOpen = false
 
@@ -23,6 +26,9 @@ class MainActivity : Activity() {
             window.setDecorFitsSystemWindows(false)
         }
 
+        insetContainer = FrameLayout(this).apply {
+            setBackgroundColor(android.graphics.Color.parseColor("#F4F0E7"))
+        }
         webView = WebView(this).apply {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
@@ -33,15 +39,49 @@ class MainActivity : Activity() {
             loadUrl("file:///android_asset/index.html")
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            webView.setOnApplyWindowInsetsListener { view, insets ->
+            val fallbackTop = systemBarDimension("status_bar_height", 24)
+            val fallbackBottom = systemBarDimension("navigation_bar_height", 24)
+            insetContainer.setOnApplyWindowInsetsListener { view, insets ->
                 val systemBars = WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout()
                 val safeInsets = insets.getInsets(systemBars)
-                view.setPadding(safeInsets.left, safeInsets.top, safeInsets.right, safeInsets.bottom)
+                view.setPadding(
+                    safeInsets.left,
+                    maxOf(safeInsets.top, fallbackTop),
+                    safeInsets.right,
+                    maxOf(safeInsets.bottom, fallbackBottom)
+                )
                 insets
             }
         }
-        setContentView(webView)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) webView.requestApplyInsets()
+        insetContainer.addView(
+            webView,
+            FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        )
+        setContentView(insetContainer)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            insetContainer.requestApplyInsets()
+            insetContainer.post {
+                insetContainer.rootWindowInsets?.let { insets ->
+                    val systemBars = WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout()
+                    val safeInsets = insets.getInsets(systemBars)
+                    insetContainer.setPadding(
+                        safeInsets.left,
+                        maxOf(safeInsets.top, systemBarDimension("status_bar_height", 24)),
+                        safeInsets.right,
+                        maxOf(safeInsets.bottom, systemBarDimension("navigation_bar_height", 24))
+                    )
+                }
+            }
+        }
+    }
+
+    private fun systemBarDimension(name: String, fallbackDp: Int): Int {
+        val resourceId = resources.getIdentifier(name, "dimen", "android")
+        return if (resourceId != 0) {
+            resources.getDimensionPixelSize(resourceId)
+        } else {
+            (fallbackDp * resources.displayMetrics.density + 0.5f).toInt()
+        }
     }
 
     inner class ThemeBridge {
@@ -65,6 +105,7 @@ class MainActivity : Activity() {
                 val color = android.graphics.Color.parseColor(
                     if (enabled) "#202521" else "#F4F0E7"
                 )
+                insetContainer.setBackgroundColor(color)
                 window.statusBarColor = color
                 window.navigationBarColor = color
 

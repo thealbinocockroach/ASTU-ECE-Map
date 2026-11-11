@@ -22,6 +22,21 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Prepare stable APK signing key
+        env:
+          APK_SIGNING_KEYSTORE_BASE64: ${{ secrets.APK_SIGNING_KEYSTORE_BASE64 }}
+          APK_SIGNING_STORE_PASSWORD: ${{ secrets.APK_SIGNING_STORE_PASSWORD }}
+          APK_SIGNING_KEY_ALIAS: ${{ secrets.APK_SIGNING_KEY_ALIAS }}
+          APK_SIGNING_KEY_PASSWORD: ${{ secrets.APK_SIGNING_KEY_PASSWORD }}
+        run: |
+          if [ -n "$APK_SIGNING_KEYSTORE_BASE64" ]; then
+            echo "$APK_SIGNING_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/ece-map-signing.keystore"
+            echo "APK_SIGNING_KEYSTORE=$RUNNER_TEMP/ece-map-signing.keystore" >> "$GITHUB_ENV"
+            echo "APK_SIGNING_STORE_PASSWORD=$APK_SIGNING_STORE_PASSWORD" >> "$GITHUB_ENV"
+            echo "APK_SIGNING_KEY_ALIAS=$APK_SIGNING_KEY_ALIAS" >> "$GITHUB_ENV"
+            echo "APK_SIGNING_KEY_PASSWORD=$APK_SIGNING_KEY_PASSWORD" >> "$GITHUB_ENV"
+          fi
+
       - name: Build debug APK
         run: |
           chmod +x ./gradlew
