@@ -1195,29 +1195,36 @@ h1,h2,h3,p {
         top:auto;
         left:12px;
         right:12px;
-        bottom:env(safe-area-inset-bottom, 0px);
+        bottom:0;
         width:auto;
-        height:68px;
+        height:calc(68px + env(safe-area-inset-bottom, 0px));
         border:1.5px solid var(--line);
-        padding:7px;
+        padding:6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
         box-shadow:4px 4px 0 var(--line);
         flex-direction:row;
         justify-content:stretch;
-        gap:8px;
+        gap:6px;
     }
     .nav-link {
         writing-mode:initial;
         transform:none;
         width:auto;
-        min-height:0;
-        flex:1;
+        min-width:0;
+        min-height:48px;
+        flex:1 1 0;
         justify-content:center;
-        padding:0 5px;
-        gap:7px;
-        border:1.5px solid var(--soft-line);
+        padding:0 4px;
+        gap:4px;
+        border:1.5px solid var(--line);
+        background:var(--card);
         box-shadow:2px 2px 0 var(--line);
-        font-size:8px;
-        letter-spacing:.04em;
+        font-size:clamp(9px,2.6vw,11px);
+        letter-spacing:0;
+        white-space:nowrap;
+    }
+    .nav-link span {
+        flex:none;
+        font-size:clamp(8px,2.2vw,9px);
     }
     .nav-link.active:after {
         display:none;
