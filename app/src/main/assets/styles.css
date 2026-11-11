@@ -20,7 +20,7 @@
     box-sizing:border-box;
 }
 html {
-    scroll-behavior:smooth;
+    scroll-behavior:auto;
 }
 html.restore-position {
     scroll-behavior:auto !important;

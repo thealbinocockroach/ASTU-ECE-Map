@@ -18,6 +18,7 @@ To install it, download the APK on your Android device, open it, and allow your 
 - Returns to the same course-list scroll position after opening a course
 - Opens course details at the top of the page
 - Keeps Android content clear of the status bar, screen cutouts, and navigation bar
+- Signed consistently so new APK releases can update the installed app
 - Course detail pages with chapter outlines, outcomes, resources, workloads, and recommended books when provided
 - Course support details placed in a separate left column, with book lists collapsed until opened
 - Course synopses, learning outcomes, topic outlines, resources, and references transcribed from the revised 2024 curriculum PDF
