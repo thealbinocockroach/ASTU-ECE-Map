@@ -27,11 +27,14 @@ jobs:
           chmod +x ./gradlew
           ./gradlew --no-daemon assembleDebug
 
+      - name: Name the install package
+        run: cp app/build/outputs/apk/debug/app-debug.apk ASTU-ECE-Map-debug.apk
+
       - name: Save APK as workflow artifact
         uses: actions/upload-artifact@v4
         with:
           name: ASTU-ECE-Map-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: ASTU-ECE-Map-debug.apk
           if-no-files-found: error
 
       - name: Publish APK to GitHub release
@@ -40,6 +43,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG_NAME: ${{ github.ref_name }}
         run: |
-          gh release create "$TAG_NAME" app/build/outputs/apk/debug/app-debug.apk \
+          gh release create "$TAG_NAME" ASTU-ECE-Map-debug.apk \
             --title "ASTU ECE Map $TAG_NAME" \
             --notes "Install the attached APK directly on Android 8.0 (API 26) or newer."
