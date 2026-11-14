@@ -384,6 +384,34 @@ function renderSyllabusUnit([title], index) {
   return `<section class="syllabus-unit"><span class="syllabus-index">${String(index + 1).padStart(2, '0')}</span><h3 class="syllabus-unit-title">${escapeHtml(title)}</h3></section>`;
 }
 
+function renderCourseChapters(course, outline) {
+  const curriculum = window.ECE_CURRICULUM_DETAILS?.[normalizeCode(course.code)];
+  if (curriculum?.chapters?.length) {
+    return `<div class="syllabus-chapters">${curriculum.chapters.map(chapter => `<details class="syllabus-chapter">
+      <summary><span class="syllabus-index">${String(chapter.number).padStart(2, '0')}</span><span class="syllabus-chapter-title">${escapeHtml(chapter.title || `Chapter ${chapter.number}`)}</span></summary>
+      <ol>${chapter.subtopics.map(topic => `<li>${escapeHtml(topic)}</li>`).join('')}</ol>
+    </details>`).join('')}</div>`;
+  }
+  return outline.units?.length ? `<div class="syllabus-chapters"><details class="syllabus-chapter">
+    <summary><span class="syllabus-index">01</span><span class="syllabus-chapter-title">Course topics</span></summary>
+    <ol>${outline.units.map(([title]) => `<li>${escapeHtml(title)}</li>`).join('')}</ol>
+  </details></div>` : '';
+}
+
+function renderWorkload(course, outline) {
+  if (!outline.workload) return '';
+  const curriculum = window.ECE_CURRICULUM_DETAILS?.[normalizeCode(course.code)];
+  const totalHours = outline.workload.match(/\b\d{2,3}\b/)?.[0];
+  const contact = curriculum?.contact?.replace(/^Credit Hour\s*:\s*[^()]*\(?/i, '').replace(/\)\s*$/, '').trim();
+  return `<section class="course-extra workload-details"><h3>Course workload</h3>
+    <dl>${course.credits && course.credits !== 'P/F' ? `<div><dt>Credit hours</dt><dd>${escapeHtml(course.credits)}</dd></div>` : ''}
+      ${course.ects ? `<div><dt>ECTS</dt><dd>${escapeHtml(course.ects)}</dd></div>` : ''}
+      ${totalHours ? `<div><dt>Total student learning time</dt><dd>${escapeHtml(totalHours)} hours</dd></div>` : `<div><dt>Total student learning time</dt><dd>${escapeHtml(outline.workload)}</dd></div>`}
+      ${contact ? `<div><dt>Contact allocation in curriculum</dt><dd>${escapeHtml(contact)}</dd></div>` : ''}
+    </dl><p>Student learning time includes scheduled learning and independent study as set out in the curriculum.</p>
+  </section>`;
+}
+
 function prerequisiteWithTitles(prerequisite) {
   const codePattern = /\b(?:ECEg|CSEg|EPCE|Math|Phys|Chem|EnLa|LART|HPEd|Meng|SOSC|IETP|SEng|ENG|ECE)\s*-?\s*\d{3,4}\b/gi;
   return prerequisite.replace(codePattern, listedCode => {
@@ -549,7 +577,13 @@ const courseOutlines = {
       ]
     ],
     "workload": "Total student learning time: 120 hours."
-  },
+  ,
+    "books": [
+      "Raymond A. Serway and John W. Jewett Jr., Physics for Scientists and Engineers with Modern Physics, 9th ed.",
+      "Hugh D. Young, Roger A. Freedman, University Physics with Modern Physics.",
+      "D. C. Tayal, Basic Electronics, 2nd ed., Himalaya Publishing House, 1998.",
+      "David Halliday, Robert Resnick, and Jearl Walker, Fundamentals of Physics."
+    ]},
   "chem1101": {
     "description": "The course is designed to study Properties, units and measurements; the composition of matter, chemical reactions, reactions stoichiometry, atomic structure and the periodic table, the chemical bond, structure of molecules, properties of solutions, chemical equilibria, introduction to functional groups and their typical reactions.",
     "outcomes": [
@@ -1195,7 +1229,13 @@ const courseOutlines = {
         "Introduction to Frequency Response"
       ]
     ]
-  },
+  ,
+    "books": [
+      "C. K. Alexander and M. N. O. Sadiku, Fundamentals of Electric Circuits, 10th ed., McGraw Hill.",
+      "J. David Irwin and R. Mark Nelms, Basic Engineering Circuit Analysis, 10th ed., Wiley, 2011.",
+      "Robert Boylestad, Introductory Circuit Analysis, 10th ed., Pearson, 2002.",
+      "A. E. Fitzgerald, D. E. Higginbotham, and Arvin Grabel, Basic Electrical Engineering, 7th ed., McGraw Hill, 2009."
+    ]},
   "cseg2101": {
     "description": "The course covers the design, analysis, and implementation of data structures and algorithms to solve engineering problems. Topics include basic data structures such as arrays, stacks, queues, and lists and advanced data structures such as trees and graphs. The algorithms used to manipulate these structures, and their application to solving practical engineering problems",
     "outcomes": [
@@ -1513,7 +1553,11 @@ const courseOutlines = {
       ]
     ],
     "workload": "120 total student learning hours."
-  },
+  ,
+    "books": [
+      "Demissu Gemeda, An Introduction to Linear Algebra, AAU Press.",
+      "Serge Lang, Linear Algebra, 3rd ed."
+    ]},
   "eceg3201": {
     "description": "In this course, students will study various digital logic families such as TTL, ECL, and CMOS, the logic gates under these families, and the electronic circuit techniques used to implement them. Subsequently, they will learn Boolean algebra, logic expressions, number systems and combinational logic design, including logic minimization and hazards. In addition, with the understanding of combinational logic design, students will learn how to design sequential systems, including analysis of the behavior of synchronization elements and system timing design. Finally, in this course, students will have hands-on design experiences by carrying out experiments with component-level devices and designing digital systems.",
     "outcomes": [
@@ -1546,7 +1590,13 @@ const courseOutlines = {
       ]
     ],
     "workload": "Total student learning time: 166 hours."
-  },
+  ,
+    "books": [
+      "Morris M. Mano, Digital Design, 4th ed.",
+      "R. J. Tocci and N. S. Widmer, Digital Systems: Principles and Applications, 9th ed., Prentice Hall, 2004.",
+      "Stephen Brown and Zvonko Vranesic, Fundamentals of Digital Logic with Verilog Design, 1st ed., McGraw-Hill, 2002.",
+      "T. L. Floyd, Digital Fundamentals, 9th ed., Prentice Hall."
+    ]},
   "epce3201": {
     "description": "The course deals with the following major points: - Introduction to Network Analysis and Synthesis, network transform representations and analysis, network functions for one port and two ports, properties of driving point functions and transfer functions, calculation of network functions, poles and zeros, time domain behavior from pole-zero plot, elements of realizability theory, synthesis of one port networks using two kinds of elements, two-port networks and the relationship between transfer functions using two-port parameters and interconnection of two-port parameter, basics of filters, filter approximation, insertion loss synthesis and synthesis of active and passive networks and filters.",
     "outcomes": [
@@ -1792,7 +1842,14 @@ const courseOutlines = {
       "LabVIEW Software"
     ],
     "workload": "Total student learning time: 160 hours."
-  },
+  ,
+    "books": [
+      "Simon Haykin, Communication Systems, 4th ed., Wiley, 2006.",
+      "B. P. Lathi, Modern Digital and Analog Communication Systems, 4th ed., Oxford University Press, 2010.",
+      "John G. Proakis, Digital Communications, Tata McGraw Hill.",
+      "Taub and Schilling, Principles of Communication Systems, McGraw Hill, 2008.",
+      "Dr. Sanjay Sharma, Analog and Digital Communication Systems, 2015."
+    ]},
   "phys3202": {
     "description": "This course is intended to introduce students to the basic ideas that underlie solid state physics, with emphasis on the behavior of electrons in crystalline structures, particularly in materials that are metallic. The other contents are X-ray diffraction, Binding Energy in Crystals, Thermal properties of solids, Dielectric properties of solid, Magnetic properties of solids, The free electron Fermi gas.",
     "outcomes": [
@@ -1869,7 +1926,10 @@ const courseOutlines = {
       "deliver the"
     ],
     "workload": "120 total student learning hours."
-  },
+  ,
+    "books": [
+      "Ministry of Science and Higher Education, History of Ethiopia and the Horn module."
+    ]},
   "eceg3306": {
     "description": "In this course, in first two chapters the topics to be covered include review of Semiconductor devices, analysis of BJT as an amplifier and switch , Small signal model of BJT, MOSFET operation and MOS spice model. Further in chapter III the basics of CMOS, CMOS invertor, Implementation of circuits using CMOS invertor and CMOS based amplifiers and differential pair have to be discussed. the operational amplifier and advanced filters including Butterworth filter have to be discussed in chapter 4. The last chapter includes the topic of ADC and DAC and their performance matrices",
     "outcomes": [
@@ -1897,7 +1957,13 @@ const courseOutlines = {
       ]
     ],
     "workload": "Total student learning time: 120 hours."
-  },
+  ,
+    "books": [
+      "Behzad Razavi, Fundamentals of Microelectronics, 2nd ed.",
+      "M. N. Horenstein, Microelectronic Circuits and Devices, 2nd ed., Prentice Hall, 1996.",
+      "R. C. Jaeger, Microelectronic Circuit Design, McGraw Hill, 1997.",
+      "A. S. Sedra and K. C. Smith, Microelectronic Circuits, 4th ed., 1997."
+    ]},
   "eceg3318": {
     "description": "In this course, students will study Optical properties of semiconductors, Optoelectronic material, Radiometry and Photometry, various Optics Lenses and Ray Tracing and Imaging. Comprehend wide range of optical diodes operation principles, structures, and their characteristics. Design conversant applications using lasers mechanisms, Types of Lasers, Modes of Operation.",
     "outcomes": [
@@ -1975,7 +2041,12 @@ const courseOutlines = {
       ]
     ],
     "workload": "122 total student learning hours."
-  },
+  ,
+    "books": [
+      "P. J. Deitel and H. M. Deitel, Java: How to Program, 11th ed., Pearson Education, 2017.",
+      "Herbert Schildt, Java: The Complete Reference, 11th ed., Tata McGraw Hill, 2019.",
+      "Java tutorial, Oracle documentation."
+    ]},
   "seng4208": {
     "description": "This course is an introductory course on Artificial Intelligence (AI) that presents an overview of AI principles and approaches. It will introduce the basic principles in artificial intelligence research, simple representation schemes, problem solving paradigms, constraint propagation, and search strategies. Areas of application such as knowledge representation, programing in logic, inference and reasoning mechanism, natural language processing, expert systems, vision and robotics will be explored. The PROLOG and others AI programming language will also be introduced.",
     "outcomes": [
@@ -2009,7 +2080,13 @@ const courseOutlines = {
       ]
     ],
     "workload": "120 total student learning hours."
-  },
+  ,
+    "books": [
+      "Stuart Russell and Peter Norvig, Artificial Intelligence: A Modern Approach, 6th ed., Prentice Hall, 2016.",
+      "Rajendra Akerkar, Introduction to Artificial Intelligence, Prentice Hall of India, 2009.",
+      "George Luger, Artificial Intelligence: Structures and Strategies for Complex Problem Solving, Benjamin Cummings, 2004.",
+      "D. W. Patterson, Introduction to AI and Expert Systems, PHI, 2012."
+    ]},
   "epce3304": {
     "description": "The course deals with the following major points: - introduction to control system, control system modelling of physical system, time domain analysis of control systems, Root locus analysis, frequency domain analysis and classical controller design techniques.",
     "outcomes": [
@@ -2040,7 +2117,14 @@ const courseOutlines = {
         "Controller Design Techniques"
       ]
     ]
-  },
+  ,
+    "books": [
+      "A. Nagoorkani, Control Systems, 2nd ed., RBA Publications, 2006.",
+      "U. A. Bakshi and V. U. Bakshi, Control Systems, Technical Publications, 2010.",
+      "Katsuhiko Ogata, Modern Control Engineering, 5th ed., Pearson, 2010.",
+      "I. J. Nagrath and M. Gopal, Control Systems Engineering, 5th ed., New Age International, 2010.",
+      "Norman Nise, Control System Engineering, 6th ed., Wiley, 2011."
+    ]},
   "epce3302": {
     "description": "The course deals with the following major points: - Electromagnetic principles; Transformers; 3-Phase Induction motors; D.C Machines.",
     "outcomes": [
@@ -2223,7 +2307,12 @@ const courseOutlines = {
       ]
     ],
     "workload": "Total student learning time: 120 hours."
-  },
+  ,
+    "books": [
+      "Matthew N. O. Sadiku, Elements of Electromagnetics, Oxford University Press, 2001.",
+      "W. H. Hayt, Engineering Electromagnetics, 4th ed., McGraw-Hill, 1981.",
+      "David J. Griffiths, Introduction to Electrodynamics, 3rd ed., Prentice Hall, 1999."
+    ]},
   "sosc5003": {
     "description": "This interdisciplinary course in general is designed to introduce students to the concept of sustainable entrepreneurship, a manageable process that can be applied across careers and work settings. It focuses on building entrepreneurial attitudes and behaviors that will lead to creative solution within community and organizational environments. This course is designed to prepare individuals for ownership of their own innovative business, and assist start-ups to function more effectively, increase the chances of new business success, enhance profitability, and increase employment. More specifically, the course provides students with an introduction to the concepts and skills necessary to successfully commercialize new products and services. Entrepreneurship is not just about starting a business. It is also about identifying good opportunities and then creating, communicating, and capturing value from those opportunities; including innovation in a corporate context. It will also teach students the skills to analyze business opportunities, and articulate them as a compelling business description, and pitch to an audience of investors, customers, or business partners. It focuses on building entrepreneurial attitudes and behaviors that will lead to creative solution within community and organizational environments.",
     "outcomes": [
@@ -2418,7 +2507,13 @@ const courseOutlines = {
       ]
     ],
     "workload": "Total student learning time: 160 hours."
-  },
+  ,
+    "books": [
+      "Douglas V. Hall, Microprocessors and Interfacing: Programming and Hardware, TMH, 2012.",
+      "Ramesh S. Gaonkar, Microprocessor Programming and Interfacing Using 8085, 4th ed., Penram, 2003.",
+      "A. K. Ray and K. M. Bhurchandy, Intel Microprocessors: Architecture, Programming and Interfacing, McGraw-Hill, 2004.",
+      "Yu-Cheng Liu and Glenn A. Gibson, Microcomputer Systems: The 8086/8088 Family, 2nd ed., Prentice Hall of India, 2007."
+    ]},
   "eceg4204": {
     "description": "This course initially describes the Radiation Integrals and Auxiliary Potential Functions. This leads to the development of various types of antennas and their applications in various types of communication systems. Then a detailed characteristic aspect of antennas is described as Antenna Parameters: Radiation Resistance, Radiation Pattern, Radiation Intensity, Directive Gain and Directivity, Power Gain. Later on, this course gives a detailed classification of various types of antennas in different frequency bands as; Wire Antennas: Antenna Types; Hertzian Dipole; Half-Wave Dipole Antenna; Quarter-Wave Monopole Antenna; Small Loop Antenna. Aperture Antennas, Frequency Independent Antennas, Broadband Antennas and Planar Antennas, Antenna Arrays: Two Element Array; N- Element Linear Array; Broadside Array; Ordinary End-Fire Array; Phased (Scanning) Array; Hansen-Woodard End-Fire Array. This course also describes about the smart antennas required for the future generation wireless mobile communication systems where the signal processing techniques are combined along with array antennas: Beam Shaping Techniques Multi-beam antennas, active antennas, efficient adaptive array control algorithms. This course finally describes about the various problems associated with signal propagating through the wireless channels (both fixed and mobile) as; Radio Wave Propagation: Ground Wave Propagation; Space Wave Propagation; Line of Sight Propagation; Ionospheric Propagation; Noise. The related research areas include Log-Periodic Antennas, Fractal Antenna, Microstrip Antennas, Rectangular Patch & Circular Patch Antenna, Antenna Arrays, Ridge Antennas, the current and future generation wireless communication systems, and the medical industry.",
     "outcomes": [
@@ -2452,7 +2547,13 @@ const courseOutlines = {
       ]
     ],
     "workload": "Total student learning time: 120 hours."
-  },
+  ,
+    "books": [
+      "J. D. Kraus, Antennas and Wave Propagation, 4th ed., McGraw-Hill, 2010.",
+      "E. C. Jordan and K. G. Balmain, Electromagnetic Waves and Radiating Systems, 2nd ed., PHI, 2000.",
+      "C. A. Balanis, Antenna Theory, 3rd ed., Wiley, 2005.",
+      "Warren L. Stutzman and Gary A. Thiele, Antenna Theory and Design, Wiley."
+    ]},
   "eceg4208": {
     "description": "This is a senior level undergraduate course for students who wish to gain a broad understanding of data communications, communication networks and Internet protocols. Students are expected to have a basic knowledge data transmissions and digital communications. There will be several real-life projects related to data communications and students will use software for implementation or simulation. These projects complement the theoretical aspects and have considerable pedagogic value in helping students understand concepts and design.",
     "outcomes": [
@@ -2535,7 +2636,14 @@ const courseOutlines = {
       ]
     ],
     "workload": "Total student learning time: 120 hours."
-  },
+  ,
+    "books": [
+      "Daron Acemoglu, David Laibson, and John List, Economics, 2nd ed., Pearson, 2018.",
+      "Hal R. Varian, Intermediate Microeconomics: A Modern Approach, 6th ed.",
+      "N. Gregory Mankiw, Principles of Economics, 8th ed., Pearson, 2018.",
+      "Paul A. Samuelson and William D. Nordhaus, Economics, 19th ed., McGraw-Hill, 2009.",
+      "Krugman, Wells, and Graddy, Essentials of Economics, 4th ed., Worth Publishers, 2016."
+    ]},
   "ietp4203": {
     "description": "This is an integrated, multidisciplinary engineering project aiming to address a special engineering topic that is being guided by a faculty member. The literature review, design, project management, business perception, multidisciplinary teamwork, entrepreneurship are all included in the team project. 12 Distribution of Student Learning Time (SLT) Course Content Outline CLO Teaching and Learning Activities Total (SLT) Guided learning (F to F) Guided Learning (NF to F) Independent Learning (NF to F) L T P O Introduction • Overview about integrated and multidisciplinary Project • Team work • Overview of project management • Entrepreneurship, Business Plan, Cash Flow, Contracting works, marketing strategy. CLO3 2 3 3 8 Project proposal • Literature review • Problem identification • Development of methods • Project budget plan • Project work plan CLO1 CLO4 2 3 2 15 22 Project planning and Design • Technical Design ✓ Material selection ✓ Drawing and specification ✓ Engineering codes and standards • Economic analysis CLO1 CLO2 CLO3 CLO4 10 50 7 8 75 • Component assembly and prototype (Simulation) development • Prototype testing • Results and discussions • Product/process operational manuals Total 105 Assessment Assessment Percentage Total- 100(%) F to F NF to F 1 Project Proposal Document 10 0 2 (preparation) 2 2 Project Proposal oral presentation 10 1 1 (preparation) 2 3 Project progress report 10 1 2 (preparation) 3 4 Poster Evaluation 5 2 (preparation) 2 5 Prototype Evaluation 30 1 1 6 Project report evaluation 20 2 (preparation) 2 7 Oral Presentation Evaluation 10 1 1 (preparation) 2 8 Peer Evaluation 5 1 1 Sub-Total 15 Grand Total SLT 120 L = Lecture, T = Tutorial, P = Practical, O = Others, F to F = Face to Face, NF to F = Non Face to Face 13 Special requirements and resources to deliver the course • Workshop and laboratory is required for project work (product development, device manufacturing/assembly etc.) • Software, computer and simulation room is needed to simulate and design. • Industry visit 14 Text book and reference: • Relevant books, research Journal articles, workshop and conference papers related to the project topic. • Integrated Engineering Team project guideline.",
     "outcomes": [
@@ -2559,7 +2667,11 @@ const courseOutlines = {
       ]
     ],
     "workload": "120 total student learning hours."
-  },
+  ,
+    "books": [
+      "Relevant books and research journal articles related to the project topic.",
+      "Integrated Engineering Team Project guideline."
+    ]},
   "eceg4310": {
     "description": "Review of Smith Chart applications: impedance, susceptance, VSWR calculations, quarter wave impedance transformer, the slotted line impedance finder. Microwave Network Analysis: impedance matrix, susceptance matrix, hybrid matrix, ABCD matrix, scattering parameters, signal flow graphs. Matching Networks and Tuning: Impedance matching RLC networks, Microstrip matching networks, Single Stub Tuning. Amplified design considerations; stability considerations, power gain considerations, amplifier tuning. Oscillator Design; oscillation conditions, oscillator configurations",
     "outcomes": [
@@ -2625,7 +2737,11 @@ const courseOutlines = {
       ]
     ],
     "workload": "Total student learning time: 120 hours."
-  },
+  ,
+    "books": [
+      "James D. Plummer, Michael D. Deal, and Peter B. Griffin, Silicon VLSI Technology: Fundamentals, Practice and Modeling, Prentice Hall, 2000.",
+      "Neil H. E. Weste, CMOS VLSI Design: A Circuits and Systems Perspective, 4th ed., Addison-Wesley, 2011."
+    ]},
   "eceg4200": {
     "description": "Advance Practical Expertise: Build on foundational skills from Industrial Internship I by engaging in more complex and high-impact engineering tasks. The course Deepen Technical Proficiency by Developing expertise in advanced technologies and methodologies relevant to the student’s field. Enhance Project Management: Strengthen skills in managing substantial engineering projects, including strategic planning, execution, and evaluation.Refine Problem-Solving and Innovation: Tackle advanced engineering problems with innovative solutions and strategic thinking. Cultivate Professional Skills: Further develop professional competencies, including leadership, advanced communication, and strategic thinking. Strengthen Industry-Academia Ties: Enhance collaboration between academic learning and industry practices through involvement in significant projects.",
     "outcomes": [
@@ -2685,7 +2801,13 @@ const courseOutlines = {
       ]
     ],
     "workload": "Total student learning time: 120 hours."
-  },
+  ,
+    "books": [
+      "Theodore S. Rappaport, Wireless Communications: Principles and Practice, 2nd ed.",
+      "Andrea Goldsmith, Wireless Communications, Cambridge University Press, 2005.",
+      "William C. Y. Lee, Mobile Cellular Telecommunications, 3rd ed.",
+      "Jochen Schiller, Mobile Communications, 2nd ed., Addison-Wesley, 2003."
+    ]},
   "eceg5203": {
     "description": "The aim of the capstone project in the senior (final) year of Electronics and Communication Engineering majors is to familiarize them with the process of designing electrical power and control systems as practiced in industry. This course requires students to develop a project based on the knowledge and skills acquired in earlier coursework and integrate their technical knowledge through practical design effort.",
     "outcomes": [
@@ -2706,7 +2828,10 @@ const courseOutlines = {
       "3 Different practical implementation lab"
     ],
     "workload": "Total student learning time: 120 hours."
-  },
+  ,
+    "books": [
+      "Relevant books and research journal articles related to the capstone project title."
+    ]},
   "eceg5207": {
     "outcomes": [
       "CLO 1 · Identify engineering problem and gather relevant information from various scientific literature.",
@@ -2730,7 +2855,11 @@ const courseOutlines = {
         "Proposal Development"
       ]
     ]
-  },
+  ,
+    "books": [
+      "Relevant books and research journal articles related to the ongoing research problem area.",
+      "ASTU Senior Project Guideline."
+    ]},
   "eceg5307": {
     "description": "Very Large-Scale Integrated Circuits (VLSI) have become the prime medium of realization of modern Electronics Systems. The main objective of this course is the study of MOSFETs and their fabrication techniques in order to design various combinational and sequential circuits using CMOS Logic. This course also introduces the concepts and techniques of modern integrated circuit design and analysis along with optimization of combinational and sequential circuit using static and dynamic based CMOS Circuits. This course is one of the vital courses for designing the processors and verifications.",
     "outcomes": [
@@ -2762,7 +2891,13 @@ const courseOutlines = {
       ]
     ],
     "workload": "Total student learning time: 120 hours."
-  },
+  ,
+    "books": [
+      "Sung-Mo Kang and Yusuf Leblebici, CMOS Digital Integrated Circuits: Analysis and Design, 3rd ed., McGraw-Hill, 2003.",
+      "Jayaram Bhasker, A VHDL Primer, 3rd ed., Pearson, 2005.",
+      "Neil H. E. Weste, David Harris, and Ayan Banerjee, CMOS VLSI Design: A Circuits and Systems Perspective, 3rd ed., Pearson, 2011.",
+      "John P. Uyemura, Introduction to VLSI Circuits and Systems, Wiley India, 2008."
+    ]},
   "cseg5307": {
     "description": "This course covers latest trends in the various layers of computer networking, emerging networking technologies and network security. At the end of this course, Students will be able to design and implement networking protocols and equipment.",
     "outcomes": [
@@ -2882,7 +3017,12 @@ const courseOutlines = {
         "Integration and Industrial Applications of PLCs and Robotics"
       ]
     ]
-  },
+  ,
+    "books": [
+      "Frank D. Petruzella, Programmable Logic Controllers, 5th ed., McGraw-Hill, 2017.",
+      "Bruno Siciliano, Lorenzo Sciavicco, Luigi Villani, and Giuseppe Oriolo, Robotics: Modelling, Planning and Control, 2nd ed., Springer, 2010.",
+      "M. P. Groover, M. Weiss, and R. N. Nagel, Industrial Robotics: Technology, Programming, and Applications, 2nd ed., Pearson, 2008."
+    ]},
   "epce4306": {
     "description": "This course Introduces technologies involved in mechatronics (Intelligent Electro-Mechanical Systems) and the techniques necessary to apply this technology to mechatronic system design. The topics includes but not limited to the following; electronics A/D, D/A converters, op-amps, filters, power devices; software program design, event-driven programming; hardware and DC Stepper Motors, solenoids, and robust sensing. Lab component of structural assignments and open-ended team project.",
     "outcomes": [
@@ -3086,7 +3226,15 @@ const courseOutlines = {
       ]
     ],
     "workload": "Total student learning time: 122 hours."
-  },
+  ,
+    "books": [
+      "Djafar K. Mynbaev and Lowell L. Scheiner, Fiber-Optic Communications Technology, Prentice Hall, 2001.",
+      "Govind P. Agrawal, Lightwave Technology: Telecommunication Systems, Wiley, 2005.",
+      "Govind P. Agrawal, Lightwave Technology: Components and Devices, Wiley, 2004.",
+      "G. P. Agrawal, Nonlinear Fiber Optics, 3rd ed., 2001.",
+      "A. Yariv, Optical Electronics, 3rd ed., Holt, Rinehart & Winston, 1991.",
+      "John M. Senior, Optical Communication."
+    ]},
   "eceg5310": {
     "description": "This course aims at providing thorough information of the conventional and upcoming satellite communication technology. The course covers the History of Satellite communication, Basic concepts of Satellite Communications, Communication Networks and Services, Comparison of Network Transmission technologies, Orbital and Spacecraft problems, Growth of Satellite communications, Orbital mechanics, Look angle determination, Orbital perturbations, Orbital determination, Launchers and launch vehicles, Orbital effects in communication system performance, Satellite Subsystems, Attitude and Control Systems (AOCS), Telemetry, Tracking, Command and monitoring, Power systems, Communication subsystems, Satellite antennas, Equipment reliability and space qualification, Basic transmission theory, System noise temperature and G/T Ratio, Design of downlinks, SatelHrsite systems using small earth stations, Uplink design, Design of specified C/N: Combining C/N and C/I values in satellite links system design examples.",
     "outcomes": [
@@ -3164,7 +3312,11 @@ const courseOutlines = {
       ]
     ],
     "workload": "Total student learning time: 130 hours."
-  },
+  ,
+    "books": [
+      "Neil H. E. Weste and David Harris, CMOS VLSI Design: A Circuits and Systems Perspective.",
+      "Sung-Mo Kang and Yusuf Leblebici, CMOS Digital Integrated Circuits: Analysis and Design."
+    ]},
   "eceg5306": {
     "description": "Students will be able to acquire knowledge on systems view of communications, integrating perspectives from computer science, electrical engineering, electronic engineering and communication engineering. Students will learn to consider tele-traffic demands, quality of service, scalability, performance and cost into consideration to develop requirements and architectures. They will be able to understand recent topics like switching systems, time divisions witching systems, data communication Networks. ISDN, voice data integration and importance of telephone traffic analysis and telephone networks. The Course also provides a good understanding of the fundamentals and application of telecommunication networks i.e. PSTN, PDN and ISDN.",
     "outcomes": [
@@ -3235,7 +3387,12 @@ const courseOutlines = {
       ]
     ],
     "workload": "Total student learning time: 120 hours."
-  },
+  ,
+    "books": [
+      "Forsyth and Ponce, Computer Vision: A Modern Approach.",
+      "Richard Szeliski, Computer Vision: Algorithms and Applications.",
+      "Rafael C. Gonzalez and Richard E. Woods, Digital Image Processing, 3rd ed."
+    ]},
   "eceg5314": {
     "description": "The course basically designed in the areas of Imaging optics, sensors and sampling patterns, image pre-processing, Frequency domain image processing, Color image processing, linear and nonlinear operations on images, enhancement fundamentals of semantic image processing, practical applications of imaging system, image segmentation and its application to biomedical imaging, satellite imaging etc. This course focuses the students ability in analyzing technologies for digital image, compression, writing and developing of algorithms, implementations of various digital image applications, Image representation and conversant with the image processing techniques.",
     "outcomes": [
@@ -3345,7 +3502,13 @@ const courseOutlines = {
       ]
     ],
     "workload": "Total student learning time: 113 hours."
-  },
+  ,
+    "books": [
+      "M. Ciletti, Advanced Digital Design with the Verilog HDL, 2nd ed., Prentice Hall.",
+      "Jayaram Bhasker, A VHDL Primer, 3rd ed., Pearson, 2005.",
+      "S. Trimberger (ed.), Field Programmable Gate Array Technology, Kluwer Academic.",
+      "Zainalabedin Navabi, Verilog Digital System Design: RT-Level Synthesis, Testbench and Verification."
+    ]},
   "eceg5202": {
     "outcomes": [
       "CLO 2 · Design/simulate/develop prototype/system, correlation or model by considering different factors/constraints.",
@@ -3368,7 +3531,11 @@ const courseOutlines = {
         "Final Research Writing and Report Preparation"
       ]
     ]
-  }
+  ,
+    "books": [
+      "Relevant books and research journal articles related to the ongoing research problem area.",
+      "ASTU Senior Project Guideline."
+    ]}
 };
 function renderExitExamGuide() {
   const guide = document.getElementById('examGuide');
@@ -3403,12 +3570,12 @@ function renderDetail() {
     ? `https://t.me/${encodeURIComponent(downloadConfig.channelUsername)}`
     : '';
   const detailContent = outline
-    ? `<p class="course-description">${escapeHtml(outline.description || 'The PDF does not provide a course synopsis.')}</p>${outline.units?.length ? `<div class="syllabus-list">${outline.units.map(renderSyllabusUnit).join('')}</div>` : ''}`
+    ? `<p class="course-description">${escapeHtml(outline.description || 'The PDF does not provide a course synopsis.')}</p>${renderCourseChapters(course, outline)}`
     : `<p class="course-description">A detailed topic breakdown will be added when its course outline is provided.</p>`;
   const supportingContent = outline ? `<article class="detail-panel course-support">
       ${outline.outcomes ? `<section class="course-extra"><h3>${escapeHtml(outline.outcomeHeading || 'Course learning outcomes')}</h3><ul>${outline.outcomes.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul></section>` : ''}
       ${outline.resources ? `<section class="course-extra"><h3>Tools and practical resources</h3><ul>${outline.resources.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul></section>` : ''}
-      ${outline.workload ? `<section class="course-extra"><h3>Course workload</h3><p>${escapeHtml(outline.workload)}</p></section>` : ''}
+      ${renderWorkload(course, outline)}
       ${outline.books ? `<details class="course-books"><summary>Recommended books <span>${outline.books.length}</span></summary><ol>${outline.books.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ol></details>` : ''}
     </article>` : '';
 
@@ -3441,6 +3608,23 @@ function getDownloadConfig() {
   };
 }
 
+let detectedBotUsername = '';
+let botUsernameLookup;
+
+async function getBotUsername(apiBaseUrl) {
+  if (detectedBotUsername) return detectedBotUsername;
+  if (!botUsernameLookup) {
+    botUsernameLookup = fetch(`${apiBaseUrl}/api/config`)
+      .then(response => response.ok ? response.json() : null)
+      .then(config => {
+        detectedBotUsername = String(config?.botUsername || '').replace(/^@/, '');
+        return detectedBotUsername;
+      })
+      .catch(() => '');
+  }
+  return botUsernameLookup;
+}
+
 async function loadCourseFiles(courseCode) {
   const getSection = () => Array.from(document.querySelectorAll('[data-downloads-for]'))
     .find(element => element.dataset.downloadsFor === courseCode);
@@ -3449,7 +3633,7 @@ async function loadCourseFiles(courseCode) {
   const status = section.querySelector('.download-status');
   const list = section.querySelector('.download-list');
   const count = section.querySelector('.download-count');
-  const { apiBaseUrl, botUsername } = getDownloadConfig();
+  const { apiBaseUrl, botUsername: configuredBotUsername } = getDownloadConfig();
   if (!apiBaseUrl) {
     status.textContent = 'Telegram downloads will appear here after setup.';
     count.textContent = '0 FILES';
@@ -3459,7 +3643,11 @@ async function loadCourseFiles(courseCode) {
   try {
     const url = new URL(`${apiBaseUrl}/api/files`);
     url.searchParams.set('code', normalizeCode(courseCode));
-    const response = await fetch(url.toString());
+    const [response, detectedUsername] = await Promise.all([
+      fetch(url.toString()),
+      configuredBotUsername ? Promise.resolve(configuredBotUsername) : getBotUsername(apiBaseUrl)
+    ]);
+    const botUsername = configuredBotUsername || detectedUsername;
     if (!response.ok) throw new Error('Catalog unavailable');
     const files = await response.json();
     if (!Array.isArray(files) || !getSection()) return;
