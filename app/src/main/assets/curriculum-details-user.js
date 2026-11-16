@@ -85,3 +85,58 @@ for (const [code, chapters] of Object.entries(window.ECE_CURRICULUM_USER)) {
     subtopics: chapter[1] ? chapter[1].split('; ') : []
   })) };
 }
+
+// Reconstructed from the ECEg5201 synopsis and Section 11 table. Three
+// mitigation topics were carried into Chapter 3 rows in the printed table.
+window.ECE_CURRICULUM_DETAILS.eceg5201 = {
+  ...window.ECE_CURRICULUM_DETAILS.eceg5201,
+  chapters: [
+    { number: '1', title: 'Introduction of Wireless and Mobile Communication', subtopics: [
+      'History of mobile radio communication',
+      'Examples of wireless communication technologies: Zigbee, Bluetooth, and Internet of Things',
+      'Trends in cellular radio communication systems, from 1G to 6G mobile networks'
+    ] },
+    { number: '2', title: 'Evolution of Mobile Telephony System', subtopics: [
+      'Introduction to mobile telephony systems',
+      'GSM mobile telephony system and architecture',
+      'UMTS/WCDMA mobile telephony system and architecture',
+      'LTE mobile network architecture',
+      '5G mobile network architecture'
+    ] },
+    { number: '3', title: 'Cellular Concept and System Design Fundamentals', subtopics: [
+      'Cellular concept and frequency reuse',
+      'Channel assignment strategies',
+      'Handoff strategies',
+      'Interference and system capacity',
+      'Trunking and grade of services'
+    ] },
+    { number: '4', title: 'Mobile Radio Channel Modeling and Mitigations', subtopics: [
+      'Wireless channel models and signal propagation',
+      'Small-scale fading and multipath propagation concepts',
+      'Parameters of the mobile radio channel',
+      'Impulse response model of the wireless channel',
+      'Categorization of fading channels',
+      'Mitigation techniques for fading wireless channels',
+      'Equalization techniques',
+      'Diversity techniques',
+      'Coding techniques'
+    ] },
+    { number: '5', title: 'Multiple Access Techniques for Wireless Systems', subtopics: [
+      'Frequency division multiple access (FDMA)',
+      'Time division multiple access (TDMA)',
+      'Code division multiple access (CDMA)',
+      'Space division multiple access (SDMA)',
+      'Spread spectrum multiple access',
+      'Orthogonal frequency division multiple access (OFDMA) wideband systems'
+    ] }
+  ]
+};
+
+// SOSC2002 labels the introductory unit as Chapter 0 in the syllabus table.
+window.ECE_CURRICULUM_DETAILS.sosc2002 = {
+  ...window.ECE_CURRICULUM_DETAILS.sosc2002,
+  chapters: window.ECE_CURRICULUM_DETAILS.sosc2002.chapters.map((chapter, index) => ({
+    ...chapter,
+    number: index === 0 ? '0' : String(index)
+  }))
+};
