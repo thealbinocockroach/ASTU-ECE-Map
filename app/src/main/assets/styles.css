@@ -612,17 +612,33 @@ h1,h2,h3,p {
 }
 .syllabus-chapter[open] summary::after { content:'−'; }
 .syllabus-chapter-title {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex:1;
+    min-width:0;
     font:600 14px var(--display);
     letter-spacing:-.015em;
 }
-.syllabus-chapter ol {
+.syllabus-chapter-hours {
+    margin-left:auto;
+    color:var(--muted);
+    font:10px var(--mono);
+    letter-spacing:0;
+    white-space:nowrap;
+}
+.syllabus-topic-list {
     margin:0;
     padding:0 30px 15px 44px;
     color:var(--muted);
     font-size:12px;
     line-height:1.65;
+    list-style:none;
 }
-.syllabus-chapter li + li { margin-top:5px; }
+.syllabus-topic-list li + li { margin-top:5px; }
+.syllabus-topic-list li.has-number { display:grid; grid-template-columns:34px minmax(0,1fr); gap:7px; }
+.syllabus-topic-number { color:var(--orange); font:10px var(--mono); line-height:1.8; }
+.syllabus-topic-text { min-width:0; }
 .syllabus-unit {
     display:grid;
     grid-template-columns:30px minmax(0,1fr);
@@ -737,6 +753,7 @@ h1,h2,h3,p {
 .workload-details dt { color:var(--muted); }
 .workload-details dd { margin:0; font-weight:600; }
 .workload-details > p { margin-top:10px; font-size:11px; }
+.workload-details > .workload-source-note { color:var(--orange); }
 .course-extra li + li {
     margin-top:6px;
 }

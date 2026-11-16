@@ -384,13 +384,35 @@ function renderSyllabusUnit([title], index) {
   return `<section class="syllabus-unit"><span class="syllabus-index">${String(index + 1).padStart(2, '0')}</span><h3 class="syllabus-unit-title">${escapeHtml(title)}</h3></section>`;
 }
 
+function renderSyllabusTopic(topic) {
+  let number = '';
+  let text = '';
+  if (topic && typeof topic === 'object') {
+    number = String(topic.number || '').trim();
+    text = String(topic.text || '').trim();
+  } else {
+    text = String(topic || '').trim();
+    const match = text.match(/^((?:\d+\.)+\d+\.?)(?:\s+)(.*)$/);
+    if (match) {
+      number = match[1].replace(/\.$/, '');
+      text = match[2].trim();
+    }
+  }
+  return `<li${number ? ' class="has-number"' : ''}>${number ? `<span class="syllabus-topic-number">${escapeHtml(number)}</span>` : ''}<span class="syllabus-topic-text">${escapeHtml(text)}</span></li>`;
+}
+
 function renderCourseChapters(course, outline) {
   const curriculum = window.ECE_CURRICULUM_DETAILS?.[normalizeCode(course.code)];
   if (curriculum?.chapters?.length) {
-    return `<div class="syllabus-chapters">${curriculum.chapters.map(chapter => `<details class="syllabus-chapter">
-      <summary><span class="syllabus-index">${String(chapter.number).padStart(2, '0')}</span><span class="syllabus-chapter-title">${escapeHtml(chapter.title || `Chapter ${chapter.number}`)}</span></summary>
-      <ol>${chapter.subtopics.map(topic => `<li>${escapeHtml(topic)}</li>`).join('')}</ol>
-    </details>`).join('')}</div>`;
+    return `<div class="syllabus-chapters">${curriculum.chapters.map(chapter => {
+      const chapterHours = chapter.studentLearningHours
+        ? `<span class="syllabus-chapter-hours">${escapeHtml(chapter.studentLearningHours)} SLT hr</span>`
+        : '';
+      return `<details class="syllabus-chapter">
+        <summary><span class="syllabus-index">${String(chapter.number).padStart(2, '0')}</span><span class="syllabus-chapter-title">${escapeHtml(chapter.title || `Chapter ${chapter.number}`)}${chapterHours}</span></summary>
+        <ul class="syllabus-topic-list">${chapter.subtopics.map(renderSyllabusTopic).join('')}</ul>
+      </details>`;
+    }).join('')}</div>`;
   }
   return outline.units?.length ? `<div class="syllabus-chapters"><details class="syllabus-chapter">
     <summary><span class="syllabus-index">01</span><span class="syllabus-chapter-title">Course topics</span></summary>
@@ -399,16 +421,21 @@ function renderCourseChapters(course, outline) {
 }
 
 function renderWorkload(course, outline) {
-  if (!outline.workload) return '';
   const curriculum = window.ECE_CURRICULUM_DETAILS?.[normalizeCode(course.code)];
-  const totalHours = outline.workload.match(/\b\d{2,3}\b/)?.[0];
-  const contact = curriculum?.contact?.replace(/^Credit Hour\s*:\s*[^()]*\(?/i, '').replace(/\)\s*$/, '').trim();
+  const workload = curriculum?.workload || {};
+  const creditText = String(workload.creditText || curriculum?.contact || '').replace(/^Credit\s*Hour\s*:\s*/i, '').trim();
+  const creditNumber = creditText.match(/^\s*(\d+(?:\.\d+)?)/)?.[1];
+  const rawContact = creditText.replace(/^\s*\d+(?:\.\d+)?\s*/, '').replace(/^\s*\(|\)\s*$/g, '').trim();
+  const contact = workload.contactHours || (/\b\d+(?:\.\d+)?\s*(?:hr|hours?)\b/i.test(rawContact) ? rawContact : '');
+  const totalHours = workload.studentLearningHours || outline?.workload?.match(/\b\d{2,3}\b/)?.[0];
+  if (!course.credits && !course.ects && !creditNumber && !contact && !totalHours) return '';
   return `<section class="course-extra workload-details"><h3>Course workload</h3>
-    <dl>${course.credits && course.credits !== 'P/F' ? `<div><dt>Credit hours</dt><dd>${escapeHtml(course.credits)}</dd></div>` : ''}
+    <dl>${creditNumber ? `<div><dt>Credit hours</dt><dd>${escapeHtml(creditNumber)}</dd></div>` : course.credits && course.credits !== 'P/F' ? `<div><dt>Credit hours</dt><dd>${escapeHtml(course.credits)}</dd></div>` : ''}
       ${course.ects ? `<div><dt>ECTS</dt><dd>${escapeHtml(course.ects)}</dd></div>` : ''}
-      ${totalHours ? `<div><dt>Total student learning time</dt><dd>${escapeHtml(totalHours)} hours</dd></div>` : `<div><dt>Total student learning time</dt><dd>${escapeHtml(outline.workload)}</dd></div>`}
-      ${contact ? `<div><dt>Contact allocation in curriculum</dt><dd>${escapeHtml(contact)}</dd></div>` : ''}
-    </dl><p>Student learning time includes scheduled learning and independent study as set out in the curriculum.</p>
+      ${totalHours ? `<div><dt>Total student learning time</dt><dd>${escapeHtml(totalHours)} hours</dd></div>` : `<div><dt>Total student learning time</dt><dd>Not specified in the syllabus</dd></div>`}
+      ${contact ? `<div><dt>Weekly contact allocation</dt><dd>${escapeHtml(contact)}</dd></div>` : ''}
+    </dl><p>Student learning time includes scheduled learning and independent study stated in the curriculum.</p>
+    ${workload.note ? `<p class="workload-source-note">${escapeHtml(workload.note)}</p>` : ''}
   </section>`;
 }
 
